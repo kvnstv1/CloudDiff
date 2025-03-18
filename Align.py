@@ -3,11 +3,21 @@ from tkinter import filedialog
 import numpy as np
 from sklearn.decomposition import PCA
 from scipy.spatial.transform import Rotation as R
+from scipy.spatial import KDTree
 import open3d as o3d
 from scipy.linalg import det
 
 file_path_source = None
 file_path_target = None
+
+
+def chamfer_distance(points1, points2):
+
+    tree = KDTree(points2)
+    dist_p1=tree.query(points1)[0]
+    tree=KDTree(points1)
+    dist_p2=tree.query(points2)[0]
+    return np.mean(dist_p1) + np.mean(dist_p2)
 
 def select_files():
     global file_path_source, file_path_target
@@ -98,4 +108,8 @@ aligned_pcd1.points = o3d.utility.Vector3dVector(final_aligned_points1)
 aligned_pcd1.paint_uniform_color([1, 0, 0])  # Paint red
 pcd2.paint_uniform_color([0, 1, 0])  # Paint green
 
-o3d.visualization.draw_geometries([pcd2, aligned_pcd1])
+o3d.io.write_point_cloud("aligned_pcd1.ply", aligned_pcd1)
+
+
+
+#o3d.visualization.draw_geometries([pcd2, aligned_pcd1])
