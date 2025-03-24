@@ -34,7 +34,7 @@ def select_file():
     if file_path:
         print(f"Selected file: {file_path}")
         # Specify the mirror axis (e.g., 'x', 'y', or 'z')
-        mirror_axis = 'x'  # Change this to 'y' or 'z' as needed
+        mirror_axis = 'y'  # Change this to 'y' or 'z' as needed
         mirror_ply_file(file_path, mirror_axis)
     else:
         print("No file selected.")
