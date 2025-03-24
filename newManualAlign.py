@@ -60,6 +60,7 @@ def align_vectors_manual(axes, axes_target):
         rotation_angle = np.arccos(dot_product)
         print(f"\nThe calculated rotation angle is \n{rotation_angle}")
         #Rodrigues' formula
+        # See: https://people.eecs.berkeley.edu/~ug/slide/pipeline/assignments/as5/rotation.html 
         K = np.array([[0, -rotation_axis[2], rotation_axis[1]],
                       [rotation_axis[2], 0, -rotation_axis[0]],
                       [-rotation_axis[1], rotation_axis[0], 0]])
@@ -81,7 +82,7 @@ else:
 pcd1 = o3d.io.read_point_cloud(file_path_source)
 pcd2 = o3d.io.read_point_cloud(file_path_target)
 
-# Downsample point clouds to 50,000 points using farthest point sampling
+#Downsample point clouds to 50,000 points using farthest point sampling
 pcd1_downsampled = pcd1.farthest_point_down_sample(50000)
 pcd2_downsampled = pcd2.farthest_point_down_sample(50000)
 
@@ -92,19 +93,19 @@ points2 = np.asarray(pcd2_downsampled.points)
 centroid1 = np.mean(points1, axis=0)
 centroid2 = np.mean(points2, axis=0)
 
-# Translate to common origin
+#Translate to common origin
 translated_points1 = points1 - centroid1
 translated_points2 = points2 - centroid2
 
-# Scale the source point cloud
+#Scale the source point cloud
 scale_factor = np.std(translated_points2) / np.std(translated_points1)
 scaled_points1 = translated_points1 * scale_factor
 
-# Perform manual PCA on scaled points
+#Perform manual PCA on scaled points
 axes1 = pca_manual(scaled_points1, 3)
 axes2 = pca_manual(translated_points2, 3)
 
-# Ensure right-handed coordinate systems
+#Ensure right-handed coordinate systems
 if det(axes1) < 0:
     axes1[2, :] *= -1
 if det(axes2) < 0:
