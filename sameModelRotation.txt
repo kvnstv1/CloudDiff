@@ -1,0 +1,90 @@
+The source file is C:/Users/satke569/OneDrive - University of Otago/Documents/CloudDiff/Experiment Data/EinScan/EinScan_odd.ply
+
+The target file is C:/Users/satke569/OneDrive - University of Otago/Documents/CloudDiff/Experiment Data/EinScan/EinScan_odd_mirrored.ply
+
+
+The convariance matrix is 
+ [[496.22699892 107.01220436 -61.25191136]
+ [107.01220436 882.17782561 -10.4607421 ]
+ [-61.25191136 -10.4607421  251.28715429]]
+
+Sorted eigenvectors are 
+[[ 0.25511096  0.93697278  0.23874758]
+ [ 0.96612438 -0.25697338 -0.02384047]
+ [-0.0390139  -0.23674182  0.97078897]]
+
+The principal components selected are: 
+[[ 0.25511096  0.93697278  0.23874758]
+ [ 0.96612438 -0.25697338 -0.02384047]
+ [-0.0390139  -0.23674182  0.97078897]]
+
+The convariance matrix is 
+ [[ 496.22699892 -107.01220436   61.25191136]
+ [-107.01220436  882.17782561  -10.4607421 ]
+ [  61.25191136  -10.4607421   251.28715429]]
+
+Sorted eigenvectors are 
+[[ 0.25511096 -0.93697278 -0.23874758]
+ [-0.96612438 -0.25697338 -0.02384047]
+ [ 0.0390139  -0.23674182  0.97078897]]
+
+The principal components selected are: 
+[[ 0.25511096 -0.93697278 -0.23874758]
+ [-0.96612438 -0.25697338 -0.02384047]
+ [ 0.0390139  -0.23674182  0.97078897]]
+Axes 1
+
+[[ 0.25511096  0.93697278  0.23874758]
+ [ 0.96612438 -0.25697338 -0.02384047]
+ [ 0.0390139   0.23674182 -0.97078897]]
+
+Axes 1 det: 1.0
+Axes 2
+
+[[ 0.25511096 -0.93697278 -0.23874758]
+ [-0.96612438 -0.25697338 -0.02384047]
+ [-0.0390139   0.23674182 -0.97078897]]
+
+Axes 2 det: 1.0
+
+The calculated rotation axis is 
+[ 0.          0.24691764 -0.96903647]
+
+The calculated rotation angle is 
+2.625667742013537
+
+The final rotation matrix is 
+[[-0.8698368   0.47806405  0.12181425]
+ [-0.47806405 -0.75583599 -0.44739996]
+ [-0.12181425 -0.44739996  0.88599919]]
+
+The calculated rotation axis is 
+[ 0.          0.09237738 -0.99572407]
+
+The calculated rotation angle is 
+2.6195303751370234
+
+The final rotation matrix is 
+[[ 0.51098042 -0.81029234 -0.28692391]
+ [ 0.85958931  0.48255999  0.16805378]
+ [ 0.00228531 -0.33250892  0.94309734]]
+
+The calculated rotation axis is 
+[0.         0.97152863 0.23692219]
+
+The calculated rotation angle is 
+0.07804761225397612
+
+The final rotation matrix is 
+[[ 0.4937193  -0.8419268  -0.21771659]
+ [ 0.86888309  0.46727646  0.16338571]
+ [-0.03582497 -0.26983694  0.96223937]]
+R
+
+[[ 0.4937193  -0.8419268  -0.21771659]
+ [ 0.86888309  0.46727646  0.16338571]
+ [-0.03582497 -0.26983694  0.96223937]]
+
+R det: 1.0000000000000009
+[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The handle is invalid. 
+[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The handle is invalid. 

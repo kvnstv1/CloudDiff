@@ -5,6 +5,7 @@ from scipy.spatial import KDTree
 import open3d as o3d
 from scipy.linalg import det
 
+
 file_path_source = None
 file_path_target = None
 
@@ -60,7 +61,7 @@ def align_vectors_manual(axes, axes_target):
         rotation_angle = np.arccos(dot_product)
         print(f"\nThe calculated rotation angle is \n{rotation_angle}")
         #Rodrigues' formula
-        # See: https://people.eecs.berkeley.edu/~ug/slide/pipeline/assignments/as5/rotation.html 
+        #See: https://people.eecs.berkeley.edu/~ug/slide/pipeline/assignments/as5/rotation.html 
         K = np.array([[0, -rotation_axis[2], rotation_axis[1]],
                       [rotation_axis[2], 0, -rotation_axis[0]],
                       [-rotation_axis[1], rotation_axis[0], 0]])
@@ -70,6 +71,26 @@ def align_vectors_manual(axes, axes_target):
         print(f"\nThe final rotation matrix is \n{rotation_matrix}")
     
     return rotation_matrix
+
+def transpose_method(axes, axes_target):
+
+    print("This should be rotation matrix stuff")
+    print("Axes:")
+    print(str(axes))
+    print("Target:")
+    print(str(axes_target))
+    T = np.transpose(axes_target)
+    print("Transpose:")
+    print(str(T))
+
+    P = np.matmul(axes,T)
+    print("Product:")
+    print(str(P))
+
+    print("Identity:")
+    print(str(np.matmul(P,np.transpose(P))))
+
+    return P
 
 select_files()
 
@@ -120,7 +141,8 @@ print(str(axes2))
 print("\nAxes 2 det:", det(axes2))
 
 #ALIGNMENT!!!!!
-rotation_matrix = align_vectors_manual(axes1, axes2)
+#rotation_matrix = align_vectors_manual(axes1, axes2)
+rotation_matrix = transpose_method(axes1, axes2)
 
 #Second verification after the stuff in the other method really
 print("R\n")
@@ -137,7 +159,7 @@ pcd1_aligned.points = o3d.utility.Vector3dVector(final_aligned_points1)
 
 #ICP registration using o3d
 reg_p2p = o3d.pipelines.registration.registration_icp(
-    pcd1_aligned, pcd2_downsampled, 0.2, np.eye(4),
+    pcd1_aligned, pcd2_downsampled, 0.5, np.eye(4),         # Changing 0.2 to 0.5 doesn't help much either
     o3d.pipelines.registration.TransformationEstimationPointToPoint(),
     o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=4000) #Increasing max iterations does not make things better.
 )
