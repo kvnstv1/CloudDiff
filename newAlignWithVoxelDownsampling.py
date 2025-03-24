@@ -121,8 +121,28 @@ pcd1_aligned_icp.points = o3d.utility.Vector3dVector(final_aligned_points1_icp)
 pcd1_aligned_icp.paint_uniform_color([1, 0, 0])  # Paint red
 pcd2_downsampled.paint_uniform_color([0, 1, 0])  # Paint green
 
-# Save aligned point clouds
+#Write output file so that we don't need to repeat experiments each time.
+#Combine the two point clouds into one
+combined_pcd = o3d.geometry.PointCloud()
+combined_pcd.points = o3d.utility.Vector3dVector(
+    np.vstack((
+        np.asarray(pcd2_downsampled.points),
+        np.asarray(pcd1_aligned_icp.points)
+    ))
+)
+
+#Assign colors to
+colors = np.vstack((
+    np.tile([0, 1, 0], (len(pcd2_downsampled.points), 1)),  # Green for source PCD
+    np.tile([1, 0, 0], (len(pcd1_aligned_icp.points), 1))   # Red for aligned PCD
+))
+combined_pcd.colors = o3d.utility.Vector3dVector(colors)
+
+#Save the combined point cloud to a PLY file
+o3d.io.write_point_cloud("combined_pcd.ply", combined_pcd)
+
+#Save aligned point clouds
 o3d.io.write_point_cloud("aligned_pcd1.ply", pcd1_aligned_icp)
 
-# Visualize both point clouds
+#Visualize both point clouds
 o3d.visualization.draw_geometries([pcd2_downsampled, pcd1_aligned_icp])
