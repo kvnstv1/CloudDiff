@@ -9,63 +9,73 @@ from scipy.linalg import det
 file_path_source = None
 file_path_target = None
 
+def mirror_axes(points):
+    """Now returns 9 versions including original at center position"""
+    mirrored_versions = []
+    axes = [1, -1]
+    
+    # Generate all 8 mirrored/axis-flipped versions
+    for x in axes:
+        for y in axes:
+            for z in axes:
+                mirrored = points * np.array([x, y, z])
+                mirrored_versions.append(mirrored)
+    
+    # Insert original copy at position 4 (grid center)
+    mirrored_versions.insert(4, points.copy())  # Index 4 is center in 3x3 grid
+    return mirrored_versions
+
 def visualize_mirror_grid(mirrored_versions, optimal_mirror, target_points, centroid_target):
     """
-    Visualizes all mirrored versions in a grid with their corresponding target
-    - mirrored_versions: List of all 8 mirrored point clouds (centered)
-    - optimal_mirror: The chosen mirror version (centered)
-    - target_points: Original target points (centered)
-    - centroid_target: Target's original centroid for positioning
+    Visualizes 9 versions (8 mirrors + original) in 3x3 grid with targets
     """
-    # Calculate grid layout parameters
-    grid_size = 3  # 3x3 grid
-    spacing = np.ptp(target_points, axis=0).max() * 3  # Auto-spacing based on target size
+    # Calculate grid spacing
+    max_dim = np.max(np.ptp(target_points, axis=0)) * 3
     
+    # 3x3 grid positions (9 cells)
+    grid_positions = [
+        (-max_dim, max_dim, 0), (0, max_dim, 0), (max_dim, max_dim, 0),
+        (-max_dim, 0, 0),       (0, 0, 0),       (max_dim, 0, 0),
+        (-max_dim, -max_dim, 0),(0, -max_dim, 0),(max_dim, -max_dim, 0)
+    ]
+
     geometries = []
     
-    # Create coordinate frame reference
-    coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=spacing/4)
-    
+    # Create coordinate frame
+    coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=max_dim/3)
+
     for i, mirrored in enumerate(mirrored_versions):
-        # Calculate grid position
-        row = i // grid_size
-        col = i % grid_size
-        x_offset = (col - 1) * spacing
-        y_offset = (1 - row) * spacing  # Flip Y for top-down layout
+        # Position in grid
+        pos = grid_positions[i]
         
-        # Create target instance (green) at original position
+        # Create target instance (green)
         target_pcd = o3d.geometry.PointCloud()
-        target_pcd.points = o3d.utility.Vector3dVector(target_points + centroid_target)
-        target_pcd.paint_uniform_color([0, 1, 0])
-        target_pcd.translate((x_offset, y_offset, 0))
+        target_pcd.points = o3d.utility.Vector3dVector(target_points + centroid_target + pos)
+        target_pcd.paint_uniform_color([0, 0.5, 0])  # Darker green
         
-        # Create mirrored source (red/yellow)
+        # Create source version
         source_pcd = o3d.geometry.PointCloud()
-        source_pcd.points = o3d.utility.Vector3dVector(mirrored + centroid_target)
+        source_pcd.points = o3d.utility.Vector3dVector(mirrored + centroid_target + pos)
         
-        # Highlight optimal mirror
+        # Highlight if optimal
         if np.array_equal(mirrored, optimal_mirror):
-            source_pcd.paint_uniform_color([1, 0.8, 0])  # Yellow
+            source_pcd.paint_uniform_color([1, 1, 0])  # Bright yellow
             bbox = source_pcd.get_axis_aligned_bounding_box()
-            bbox.color = (1, 0.5, 0)  # Orange
+            bbox.color = (1, 0, 0)  # Red box
             geometries.append(bbox)
         else:
-            source_pcd.paint_uniform_color([1, 0, 0])  # Red
-            
-        source_pcd.translate((x_offset + spacing/3, y_offset, 0))
+            source_pcd.paint_uniform_color([0.8, 0.8, 1])  # Light blue
         
-        geometries.extend([target_pcd, source_pcd, coord_frame.translate((x_offset, y_offset, 0))])
+        geometries.extend([target_pcd, source_pcd, coord_frame.translate(pos)])
 
-    # Set camera view
     o3d.visualization.draw_geometries(
         geometries,
-        window_name="Mirror-Target Grid Comparison",
-        zoom=0.7,
-        front=[0, -1, 0.5],
-        lookat=[0, 0, 0],
+        window_name="3x3 Mirror Grid",
+        zoom=0.5,
+        front=[-0.5, -0.5, 1],
+        lookat=centroid_target,
         up=[0, 0, 1]
     )
-
 
 
 def visualize_points(points1, points2):

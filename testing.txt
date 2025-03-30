@@ -82,8 +82,6 @@ The optimal mirror is
  [ -1.45940045  33.96533179   1.40512749]
  [  1.65056844  33.38506902  -1.17447856]
  [ -0.89325272  34.91032929   0.88508889]]
-[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The requested transformation operation is not supported. 
-[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The requested transformation operation is not supported. 
 [Open3D WARNING] GLFW Error: WGL: Failed to make context current: The handle is invalid. 
 The registration attempt is 
 RegistrationResult with fitness=7.840000e-03, inlier_rmse=1.520426e-01, and correspondence_set size of 392
