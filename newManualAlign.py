@@ -9,14 +9,72 @@ from scipy.linalg import det
 file_path_source = None
 file_path_target = None
 
+
+def visualize_points(points1, points2):
+    """
+    Visualize the points given together for debugging purposes.
+    """
+    # Create point clouds for visualization
+    pcd1_aligned = o3d.geometry.PointCloud()
+    pcd1_aligned.points = o3d.utility.Vector3dVector(points1)
+    pcd1_aligned.paint_uniform_color([1, 0, 0])  # Paint red
+
+    pcd2 = o3d.geometry.PointCloud()
+    pcd2.points = o3d.utility.Vector3dVector(points2)
+    pcd2.paint_uniform_color([0, 1, 0])  # Paint green
+
+    # Visualize both point clouds
+    o3d.visualization.draw_geometries([pcd2, pcd1_aligned])
+
+
+def mirror_axes(points):
+    """
+    A method that returns all versions of an object 
+    mirrored along all its axes.
+    """
+    mirrored_versions = []
+    axes = [1, -1]
+    for x in axes:
+        for y in axes:
+            for z in axes:
+                mirrored = points * np.array([x, y, z])
+                mirrored_versions.append(mirrored)
+    return mirrored_versions
+
+
 def chamfer_distance(points1, points2):
+    """
+    A method that calculates the Chamfer distance between 2 objects in 3d space.
+    The Chamfer distance is the distance from each point int he source to its nearest neighbour
+    in the target, and from each point in the target to its nearest point in the source
+
+    @see: https://medium.com/@sim30217/chamfer-distance-4207955e8612
+    """
     tree = KDTree(points2)
     dist_p1 = tree.query(points1)[0]
     tree = KDTree(points1)
     dist_p2 = tree.query(points2)[0]
     return np.mean(dist_p1) + np.mean(dist_p2)
 
+def find_optimal_mirror(points1, points2):
+    """
+    A method that finds the optimal mirror image from a set of mirrored images of the 
+    source file that has been centred and roughly aligned.
+    """
+    mirrored_versions = mirror_axes(points1)
+    distances = [chamfer_distance(mirrored, points2) for mirrored in mirrored_versions]
+    min_distance = min(distances)
+    optimal_mirror_index = distances.index(min_distance)
+    optimal_mirror = mirrored_versions[optimal_mirror_index]
+    visualize_points(points2, optimal_mirror)
+    return min_distance, optimal_mirror
+
+
 def select_files():
+    """
+    A method to select files using a simple button and a filechooser
+    using tkinter.
+    """
     global file_path_source, file_path_target
     root = tk.Tk()
     root.title("Select files!")
@@ -26,6 +84,11 @@ def select_files():
     file_path_target = filedialog.askopenfilename(title="Select target file")
 
 def pca_manual(data, n_components):
+    """
+    A method to do Principal Component Analysis on an object 'data' 
+    to find "n_components" number of components.
+    Returns a list of the principal components.
+    """
     #This part already works fine, so great...
     mean = np.mean(data, axis=0)
     centered_data = data - mean
@@ -48,6 +111,10 @@ def pca_manual(data, n_components):
     return principal_components
 
 def align_vectors_manual(axes, axes_target):
+    """
+    A method to align axes by calculating a rotation matrix that transforms 
+    the source to the target.
+    """
     rotation_matrix = np.eye(3)
     
     for i in range(3):
@@ -73,7 +140,10 @@ def align_vectors_manual(axes, axes_target):
     return rotation_matrix
 
 def transpose_method(axes, axes_target):
-
+    """
+    A simpler method to calculate the rotation matrix by assuming that
+    the coordinate system remains consistent. 
+    """
     print("This should be rotation matrix stuff")
     print("Axes:")
     print(str(axes))
@@ -83,6 +153,8 @@ def transpose_method(axes, axes_target):
     print("Transpose:")
     print(str(T))
 
+    #matmul does matrix multiplication. Otherwise it does 
+    #element-wise multiplication.
     P = np.matmul(axes,T)
     print("Product:")
     print(str(P))
@@ -92,110 +164,122 @@ def transpose_method(axes, axes_target):
 
     return P
 
-select_files()
 
-if file_path_source and file_path_target:
-    print(f"The source file is {file_path_source}\n")
-    print(f"The target file is {file_path_target}\n")
-else:
-    print("No files selected.")
+def main():
 
-pcd1 = o3d.io.read_point_cloud(file_path_source)
-pcd2 = o3d.io.read_point_cloud(file_path_target)
+    """
+    Calls the m,ethods in the right order.
+    """
+    select_files()
 
-#Downsample point clouds to 50,000 points using farthest point sampling
-pcd1_downsampled = pcd1.farthest_point_down_sample(50000)
-pcd2_downsampled = pcd2.farthest_point_down_sample(50000)
+    if file_path_source and file_path_target:
+        print(f"The source file is {file_path_source}\n")
+        print(f"The target file is {file_path_target}\n")
+    else:
+        print("No files selected.")
 
-points1 = np.asarray(pcd1_downsampled.points)
-points2 = np.asarray(pcd2_downsampled.points)
+    pcd1 = o3d.io.read_point_cloud(file_path_source)
+    pcd2 = o3d.io.read_point_cloud(file_path_target)
 
-#Compute centroids
-centroid1 = np.mean(points1, axis=0)
-centroid2 = np.mean(points2, axis=0)
+    #Downsample point clouds to 50,000 points using farthest point sampling
+    pcd1_downsampled = pcd1.farthest_point_down_sample(50000)
+    pcd2_downsampled = pcd2.farthest_point_down_sample(50000)
 
-#Translate to common origin
-translated_points1 = points1 - centroid1
-translated_points2 = points2 - centroid2
+    points1 = np.asarray(pcd1_downsampled.points)
+    points2 = np.asarray(pcd2_downsampled.points)
 
-#Scale the source point cloud
-scale_factor = np.std(translated_points2) / np.std(translated_points1)
-scaled_points1 = translated_points1 * scale_factor
+    #Compute centroids
+    centroid1 = np.mean(points1, axis=0)
+    centroid2 = np.mean(points2, axis=0)
 
-#Perform manual PCA on scaled points
-axes1 = pca_manual(scaled_points1, 3)
-axes2 = pca_manual(translated_points2, 3)
+    #Translate to common origin
+    translated_points1 = points1 - centroid1
+    translated_points2 = points2 - centroid2
 
-#Ensure right-handed coordinate systems
-if det(axes1) < 0:
-    axes1[2, :] *= -1
-if det(axes2) < 0:
-    axes2[2, :] *= -1
+    #Scale the source point cloud
+    scale_factor = np.std(translated_points2) / np.std(translated_points1)
+    scaled_points1 = translated_points1 * scale_factor
 
-print("Axes 1\n")
-print(str(axes1))
-print("\nAxes 1 det:", det(axes1))
+    #Perform manual PCA on scaled points
+    axes1 = pca_manual(scaled_points1, 3)
+    axes2 = pca_manual(translated_points2, 3)
 
-print("Axes 2\n")
-print(str(axes2))
-print("\nAxes 2 det:", det(axes2))
+    #Ensure right-handed coordinate systems
+    if det(axes1) < 0:
+        axes1[2, :] *= -1
+    if det(axes2) < 0:
+        axes2[2, :] *= -1
 
-#ALIGNMENT!!!!!
-#rotation_matrix = align_vectors_manual(axes1, axes2)
-rotation_matrix = transpose_method(axes1, axes2)
+    print("Axes 1\n")
+    print(str(axes1))
+    print("\nAxes 1 det:", det(axes1))
 
-#Second verification after the stuff in the other method really
-print("R\n")
-print(rotation_matrix)
-print("\nR det:", det(rotation_matrix))
+    print("Axes 2\n")
+    print(str(axes2))
+    print("\nAxes 2 det:", det(axes2))
 
-#Pre ICP step of applying rotation and translation
-aligned_points1 = np.dot(scaled_points1, rotation_matrix)
-final_aligned_points1 = aligned_points1 + centroid2
+    #ALIGNMENT!!!!!
+    #rotation_matrix = align_vectors_manual(axes1, axes2)
+    rotation_matrix = transpose_method(axes1, axes2)
 
-#Apply ICP for finer alignment
-pcd1_aligned = o3d.geometry.PointCloud()
-pcd1_aligned.points = o3d.utility.Vector3dVector(final_aligned_points1)
+    #Second verification after the stuff in the other method really
+    print("R\n")
+    print(rotation_matrix)
+    print("\nR det:", det(rotation_matrix))
 
-#ICP registration using o3d
-reg_p2p = o3d.pipelines.registration.registration_icp(
-    pcd1_aligned, pcd2_downsampled, 0.5, np.eye(4),         # Changing 0.2 to 0.5 doesn't help much either
-    o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-    o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=4000) #Increasing max iterations does not make things better.
-)
+    #Pre ICP step of applying rotation and translation
+    aligned_points1 = np.dot(scaled_points1, rotation_matrix)
+    final_aligned_points1 = aligned_points1 + centroid2
 
-#Apply ICP transformation
-final_aligned_points1_icp = np.dot(np.vstack((final_aligned_points1.T, np.ones(final_aligned_points1.shape[0]))).T, reg_p2p.transformation).T[:3].T
+    # Find the optimal mirrored version
+    min_distance, optimal_mirror = find_optimal_mirror(final_aligned_points1, translated_points2)
+    print(f"The optimal mirror is \n{optimal_mirror}")
 
-#Visualize
-pcd1_aligned_icp = o3d.geometry.PointCloud()
-pcd1_aligned_icp.points = o3d.utility.Vector3dVector(final_aligned_points1_icp)
-pcd1_aligned_icp.paint_uniform_color([1, 0, 0])  # Paint red
-pcd2_downsampled.paint_uniform_color([0, 1, 0])  # Paint green
+    #Testing purposes only
+    #optimal_mirror = final_aligned_points1
 
-#Write output file so that we don't need to repeat experiments each time.
-#Combine the two point clouds into one
-combined_pcd = o3d.geometry.PointCloud()
-combined_pcd.points = o3d.utility.Vector3dVector(
-    np.vstack((
-        np.asarray(pcd2_downsampled.points),
-        np.asarray(pcd1_aligned_icp.points)
-    ))
-)
+    # We're using the optimal mirrored version for finer alignment 
+    pcd1_aligned = o3d.geometry.PointCloud()
+    pcd1_aligned.points = o3d.utility.Vector3dVector(optimal_mirror)
 
-#Assign colors to
-colors = np.vstack((
-    np.tile([0, 1, 0], (len(pcd2_downsampled.points), 1)),  # Green for source PCD
-    np.tile([1, 0, 0], (len(pcd1_aligned_icp.points), 1))   # Red for aligned PCD
-))
-combined_pcd.colors = o3d.utility.Vector3dVector(colors)
+    #ICP registration using o3d
+    reg_p2p = o3d.pipelines.registration.registration_icp(
+        pcd1_aligned, pcd2_downsampled, 0.2, np.eye(4),         # Changing 0.2 to 0.5 doesn't help much either
+        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
+        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=2000) #Increasing max iterations does not make things better.
+    )
+    print(f"The registration attempt is \n{reg_p2p} ")
 
-#Save the combined point cloud to a PLY file
-o3d.io.write_point_cloud("combined_pcd.ply", combined_pcd)
+    #Apply ICP transformation
+    final_aligned_points1_icp = np.dot(np.vstack((optimal_mirror.T, np.ones(optimal_mirror.shape[0]))).T, reg_p2p.transformation).T[:3].T
+
+    #Visualize
+    visualize_points(pcd2_downsampled, final_aligned_points1_icp)
+
+    #Write output file so that we don't need to repeat experiments each time.
+    #Combine the two point clouds into one
+    # combined_pcd = o3d.geometry.PointCloud()
+    # combined_pcd.points = o3d.utility.Vector3dVector(
+    #     np.vstack((
+    #         np.asarray(pcd2_downsampled.points),
+    #         np.asarray(pcd1_aligned_icp.points)
+    #     ))
+    # )
+
+    #Assign colors to
+    # colors = np.vstack((
+    #     np.tile([0, 1, 0], (len(pcd2_downsampled.points), 1)),  # Green for source PCD
+    #     np.tile([1, 0, 0], (len(pcd1_aligned_icp.points), 1))   # Red for aligned PCD
+    # ))
+    # combined_pcd.colors = o3d.utility.Vector3dVector(colors)
+
+    #Save the combined point cloud to a PLY file
+    #o3d.io.write_point_cloud("combined_pcd.ply", combined_pcd)
 
 
-#Save aligned point clouds
-#o3d.io.write_point_cloud("aligned_pcd1.ply", pcd1_aligned_icp)
+    #Save aligned point clouds
+    #o3d.io.write_point_cloud("aligned_pcd1.ply", pcd1_aligned_icp)
 
-#Visualize both point clouds
-o3d.visualization.draw_geometries([pcd2_downsampled, pcd1_aligned_icp])
+
+if __name__ == "__main__":
+    main()
