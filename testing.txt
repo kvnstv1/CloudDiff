@@ -1,0 +1,90 @@
+The source file is C:/Users/satke569/OneDrive - University of Otago/Documents/CloudDiff/Experiment Data/EinScan/EinScan_source.ply
+
+The target file is C:/Users/satke569/OneDrive - University of Otago/Documents/CloudDiff/Experiment Data/EinScan/Rz40Rym40.ply
+
+
+The convariance matrix is 
+ [[497.24783337 107.88492054 -60.34670239]
+ [107.88492054 881.86313883 -10.6043179 ]
+ [-60.34670239 -10.6043179  250.58100662]]
+
+Sorted eigenvectors are 
+[[ 0.25741276  0.93745783  0.234332  ]
+ [ 0.96551333 -0.25931825 -0.02319586]
+ [-0.03902143 -0.23222158  0.97187986]]
+
+The principal components selected are: 
+[[ 0.25741276  0.93745783  0.234332  ]
+ [ 0.96551333 -0.25931825 -0.02319586]
+ [-0.03902143 -0.23222158  0.97187986]]
+
+The convariance matrix is 
+ [[ 497.6145857   179.97381295 -260.33897858]
+ [ 179.97381295  617.32579261 -110.08024594]
+ [-260.33897858 -110.08024594  514.75160052]]
+
+Sorted eigenvectors are 
+[[-0.60035099 -0.2711288  -0.75237481]
+ [-0.57611205  0.79912752  0.17172684]
+ [ 0.55468333  0.53654857 -0.63595757]]
+
+The principal components selected are: 
+[[-0.60035099 -0.2711288  -0.75237481]
+ [-0.57611205  0.79912752  0.17172684]
+ [ 0.55468333  0.53654857 -0.63595757]]
+Axes 1
+
+[[ 0.25741276  0.93745783  0.234332  ]
+ [ 0.96551333 -0.25931825 -0.02319586]
+ [ 0.03902143  0.23222158 -0.97187986]]
+
+Axes 1 det: 0.9999999999999998
+Axes 2
+
+[[-0.60035099 -0.2711288  -0.75237481]
+ [-0.57611205  0.79912752  0.17172684]
+ [ 0.55468333  0.53654857 -0.63595757]]
+
+Axes 2 det: 0.9999999999999998
+This should be rotation matrix stuff
+Axes:
+[[ 0.25741276  0.93745783  0.234332  ]
+ [ 0.96551333 -0.25931825 -0.02319586]
+ [ 0.03902143  0.23222158 -0.97187986]]
+Target:
+[[-0.60035099 -0.2711288  -0.75237481]
+ [-0.57611205  0.79912752  0.17172684]
+ [ 0.55468333  0.53654857 -0.63595757]]
+Transpose:
+[[-0.60035099 -0.57611205  0.55468333]
+ [-0.2711288   0.79912752  0.53654857]
+ [-0.75237481  0.17172684 -0.63595757]]
+Product:
+[[-0.58501532  0.64109086  0.49674902]
+ [-0.49188626 -0.76745557  0.41116889]
+ [ 0.64482942 -0.00380392  0.76431705]]
+Identity:
+[[ 1.00000000e+00  5.07648145e-16  1.29214125e-17]
+ [ 5.07648145e-16  1.00000000e+00 -6.59200062e-16]
+ [ 1.29214125e-17 -6.59200062e-16  1.00000000e+00]]
+R
+
+[[-0.58501532  0.64109086  0.49674902]
+ [-0.49188626 -0.76745557  0.41116889]
+ [ 0.64482942 -0.00380392  0.76431705]]
+
+R det: 0.9999999999999998
+The optimal mirror is 
+[[ 17.10886852  -5.25624468 -37.26537009]
+ [ 14.86054735   2.27197659 -34.83275159]
+ [  7.82038952   1.51696238 -29.16898725]
+ ...
+ [ -1.45940045  33.96533179   1.40512749]
+ [  1.65056844  33.38506902  -1.17447856]
+ [ -0.89325272  34.91032929   0.88508889]]
+[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The requested transformation operation is not supported. 
+[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The requested transformation operation is not supported. 
+[Open3D WARNING] GLFW Error: WGL: Failed to make context current: The handle is invalid. 
+The registration attempt is 
+RegistrationResult with fitness=7.840000e-03, inlier_rmse=1.520426e-01, and correspondence_set size of 392
+Access transformation to get result. 

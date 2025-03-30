@@ -9,6 +9,64 @@ from scipy.linalg import det
 file_path_source = None
 file_path_target = None
 
+def visualize_mirror_grid(mirrored_versions, optimal_mirror, target_points, centroid_target):
+    """
+    Visualizes all mirrored versions in a grid with their corresponding target
+    - mirrored_versions: List of all 8 mirrored point clouds (centered)
+    - optimal_mirror: The chosen mirror version (centered)
+    - target_points: Original target points (centered)
+    - centroid_target: Target's original centroid for positioning
+    """
+    # Calculate grid layout parameters
+    grid_size = 3  # 3x3 grid
+    spacing = np.ptp(target_points, axis=0).max() * 3  # Auto-spacing based on target size
+    
+    geometries = []
+    
+    # Create coordinate frame reference
+    coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=spacing/4)
+    
+    for i, mirrored in enumerate(mirrored_versions):
+        # Calculate grid position
+        row = i // grid_size
+        col = i % grid_size
+        x_offset = (col - 1) * spacing
+        y_offset = (1 - row) * spacing  # Flip Y for top-down layout
+        
+        # Create target instance (green) at original position
+        target_pcd = o3d.geometry.PointCloud()
+        target_pcd.points = o3d.utility.Vector3dVector(target_points + centroid_target)
+        target_pcd.paint_uniform_color([0, 1, 0])
+        target_pcd.translate((x_offset, y_offset, 0))
+        
+        # Create mirrored source (red/yellow)
+        source_pcd = o3d.geometry.PointCloud()
+        source_pcd.points = o3d.utility.Vector3dVector(mirrored + centroid_target)
+        
+        # Highlight optimal mirror
+        if np.array_equal(mirrored, optimal_mirror):
+            source_pcd.paint_uniform_color([1, 0.8, 0])  # Yellow
+            bbox = source_pcd.get_axis_aligned_bounding_box()
+            bbox.color = (1, 0.5, 0)  # Orange
+            geometries.append(bbox)
+        else:
+            source_pcd.paint_uniform_color([1, 0, 0])  # Red
+            
+        source_pcd.translate((x_offset + spacing/3, y_offset, 0))
+        
+        geometries.extend([target_pcd, source_pcd, coord_frame.translate((x_offset, y_offset, 0))])
+
+    # Set camera view
+    o3d.visualization.draw_geometries(
+        geometries,
+        window_name="Mirror-Target Grid Comparison",
+        zoom=0.7,
+        front=[0, -1, 0.5],
+        lookat=[0, 0, 0],
+        up=[0, 0, 1]
+    )
+
+
 
 def visualize_points(points1, points2):
     """
@@ -33,6 +91,7 @@ def mirror_axes(points):
     mirrored along all its axes.
     """
     mirrored_versions = []
+    mirrored_versions.append(points)
     axes = [1, -1]
     for x in axes:
         for y in axes:
@@ -56,18 +115,47 @@ def chamfer_distance(points1, points2):
     dist_p2 = tree.query(points2)[0]
     return np.mean(dist_p1) + np.mean(dist_p2)
 
-def find_optimal_mirror(points1, points2):
+# def find_optimal_mirror(points1, points2):
+#     """
+#     A method that finds the optimal mirror image from a set of mirrored images of the 
+#     source file that has been centred and roughly aligned.
+#     """
+#     mirrored_versions = mirror_axes(points1)
+#     distances = [chamfer_distance(mirrored, points2) for mirrored in mirrored_versions]
+#     min_distance = min(distances)
+#     optimal_mirror_index = distances.index(min_distance)
+#     optimal_mirror = mirrored_versions[optimal_mirror_index]
+#     visualize_points(points2, optimal_mirror)
+#     return min_distance, optimal_mirror
+
+def find_optimal_mirror(points1, points2, centroid):
     """
-    A method that finds the optimal mirror image from a set of mirrored images of the 
-    source file that has been centred and roughly aligned.
+    Returns optimal mirror with visual highlighting and proper positioning
     """
     mirrored_versions = mirror_axes(points1)
     distances = [chamfer_distance(mirrored, points2) for mirrored in mirrored_versions]
     min_distance = min(distances)
-    optimal_mirror_index = distances.index(min_distance)
-    optimal_mirror = mirrored_versions[optimal_mirror_index]
-    visualize_points(points2, optimal_mirror)
+    optimal_idx = distances.index(min_distance)
+    optimal_mirror = mirrored_versions[optimal_idx]
+    
+    # Create highlighted version (yellow) for visualization
+    optimal_highlight = o3d.geometry.PointCloud()
+    optimal_highlight.points = o3d.utility.Vector3dVector(optimal_mirror + centroid)
+    optimal_highlight.paint_uniform_color([1, 0.7, 0])  # Yellow
+    
+    # Create original target (green)
+    target_pcd = o3d.geometry.PointCloud()
+    target_pcd.points = o3d.utility.Vector3dVector(points2 + centroid)
+    target_pcd.paint_uniform_color([0, 1, 0])
+    
+    o3d.visualization.draw_geometries([target_pcd, optimal_highlight],
+                                     window_name="Optimal Mirror Preview",
+                                     zoom=0.8,
+                                     front=[0, -1, 0.5],
+                                     lookat=centroid,
+                                     up=[0, 0, 1])
     return min_distance, optimal_mirror
+
 
 
 def select_files():
@@ -229,11 +317,23 @@ def main():
 
     #Pre ICP step of applying rotation and translation
     aligned_points1 = np.dot(scaled_points1, rotation_matrix)
-    final_aligned_points1 = aligned_points1 + centroid2
+    final_aligned_points1 = aligned_points1
 
     # Find the optimal mirrored version
-    min_distance, optimal_mirror = find_optimal_mirror(final_aligned_points1, translated_points2)
+    min_distance, optimal_mirror = find_optimal_mirror(final_aligned_points1, translated_points2, centroid2)
     print(f"The optimal mirror is \n{optimal_mirror}")
+
+    mirrored_versions = mirror_axes(final_aligned_points1)
+
+   # Visualize grid
+    visualize_mirror_grid(
+    mirrored_versions,
+    optimal_mirror,
+    translated_points2,
+    centroid2
+    )
+
+    optimal_mirror = optimal_mirror + centroid2
 
     #Testing purposes only
     #optimal_mirror = final_aligned_points1
@@ -254,7 +354,7 @@ def main():
     final_aligned_points1_icp = np.dot(np.vstack((optimal_mirror.T, np.ones(optimal_mirror.shape[0]))).T, reg_p2p.transformation).T[:3].T
 
     #Visualize
-    visualize_points(pcd2_downsampled, final_aligned_points1_icp)
+    visualize_points(np.asarray(pcd2_downsampled.points), final_aligned_points1_icp)
 
     #Write output file so that we don't need to repeat experiments each time.
     #Combine the two point clouds into one
