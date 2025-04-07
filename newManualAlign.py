@@ -18,12 +18,18 @@ def mirror_axes(points):
     for x in axes:
         for y in axes:
             for z in axes:
-                mirrored = points * np.array([x, y, z])
+                mirror_matrix = np.array([
+                    [x, 0, 0],
+                    [0, y, 0],
+                    [0, 0, z]
+                ])
+                mirrored = np.matmul(mirror_matrix, points.T).T  # Apply matrix multiplication
                 mirrored_versions.append(mirrored)
     
     # Insert original copy at position 4 (grid center)
     mirrored_versions.insert(4, points.copy())  # Index 4 is center in 3x3 grid
     return mirrored_versions
+
 
 def visualize_mirror_grid(mirrored_versions, optimal_mirror, target_points, centroid_target):
     """
@@ -95,20 +101,29 @@ def visualize_points(points1, points2):
     o3d.visualization.draw_geometries([pcd2, pcd1_aligned])
 
 
+import numpy as np
+
 def mirror_axes(points):
     """
     A method that returns all versions of an object 
-    mirrored along all its axes.
+    mirrored along all its axes using matrix multiplication.
     """
     mirrored_versions = []
-    mirrored_versions.append(points)
     axes = [1, -1]
+    
+    # Create all possible transformation matrices
     for x in axes:
         for y in axes:
             for z in axes:
-                mirrored = points * np.array([x, y, z])
+                # Create transformation matrix for mirroring
+                transform_matrix = np.diag([x, y, z])
+                
+                # Apply transformation using matrix multiplication
+                mirrored = np.matmul(transform_matrix, points.T).T
                 mirrored_versions.append(mirrored)
+    
     return mirrored_versions
+
 
 
 def chamfer_distance(points1, points2):
