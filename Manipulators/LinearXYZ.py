@@ -25,7 +25,7 @@ def select_file():
     if file_path:
         print(f"Selected file: {file_path}")
         # Specify the translation vector (300 units along the x-axis)
-        translation_vector = [300, 500, -250]
+        translation_vector = [300, 0,0]
         translate_ply_file(file_path, translation_vector)
     else:
         print("No file selected.")

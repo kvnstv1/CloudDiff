@@ -4,9 +4,12 @@ import open3d as o3d
 import numpy as np
 import os
 
+
 def rotate_ply_file(file_path, rotation_axis, rotation_angle):
 
     pcd = o3d.io.read_point_cloud(file_path)
+
+    
     
     # Define the rotation matrix
     rotation_angle = np.deg2rad(rotation_angle) 
@@ -31,15 +34,18 @@ def rotate_ply_file(file_path, rotation_axis, rotation_angle):
     else:
         raise ValueError("Invalid rotation axis. Must be 'x', 'y', or 'z'.")
     
-    #Rotation time!
-    points = np.asarray(pcd.points)
-    rotated_points = np.dot(points, rotation_matrix)
-    pcd.points = o3d.utility.Vector3dVector(rotated_points)
+
+    pcd.rotate(rotation_matrix, center=(0, 0, 0))  # Rotate around the origin
+    
+    # #Rotation time!
+    # points = np.asarray(pcd.points)
+    # rotated_points = np.matmul(points, np.transpose(rotation_matrix))
+    # pcd.points = o3d.utility.Vector3dVector(rotated_points)
     
     #Write to file
     file_name, file_extension = os.path.splitext(file_path)
     new_file_path = f"{file_name}_rotated{file_extension}"
-    o3d.io.write_point_cloud(new_file_path, pcd)
+    o3d.io.write_point_cloud(new_file_path, pcd, write_ascii=True)
 
 def select_file():
     root = tk.Tk()

@@ -10,7 +10,10 @@ file_path_source = None
 file_path_target = None
 
 def mirror_axes(points):
-    """Now returns 9 versions including original at center position"""
+    """Now returns 9 versions including original at center 
+    Order of operations checked using an online source.
+    @see: https://gamedev.stackexchange.com/questions/149062/how-to-mirror-reflect-flip-a-4d-transformation-matrix
+    """
     mirrored_versions = []
     axes = [1, -1]
     
@@ -23,7 +26,7 @@ def mirror_axes(points):
                     [0, y, 0],
                     [0, 0, z]
                 ])
-                mirrored = np.matmul(mirror_matrix, points.T).T  # Apply matrix multiplication
+                mirrored = points@mirror_matrix
                 mirrored_versions.append(mirrored)
     
     # Insert original copy at position 4 (grid center)
@@ -119,7 +122,7 @@ def mirror_axes(points):
                 transform_matrix = np.diag([x, y, z])
                 
                 # Apply transformation using matrix multiplication
-                mirrored = np.matmul(transform_matrix, points.T).T
+                mirrored = np.transpose(np.matmul(transform_matrix, np.transpose(points)))
                 mirrored_versions.append(mirrored)
     
     return mirrored_versions
@@ -227,6 +230,7 @@ def align_vectors_manual(axes, axes_target):
     """
     A method to align axes by calculating a rotation matrix that transforms 
     the source to the target.
+    NOT BEING USED AT THE MOMENT.
     """
     rotation_matrix = np.eye(3)
     
