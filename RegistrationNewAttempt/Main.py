@@ -55,6 +55,24 @@ def writePlyFile(data):
     o3d.io.write_point_cloud(filename, pcd, write_ascii=True)
     print(f"Wrote data to {filename} successfully.")
 
+def writeCombinedData(source, target):
+    """
+    This method combines two ply files into one file.
+    The source cloud is coloured green, and the target is coloured red. 
+    """
+    sourcePCD = o3d.geometry.PointCloud()
+    targetPCD = o3d.geometry.PointCloud()
+    sourcePCD.points = o3d.utility.Vector3dVector(np.transpose(source))
+    targetPCD.points = o3d.utility.Vector3dVector(np.transpose(target))
+    sourcePCD.paint_uniform_color([1,0,0])
+    targetPCD.paint_uniform_color([0,1,0])
+    combined = sourcePCD + targetPCD
+    filename = filedialog.asksaveasfilename(
+        title="Let's save the combined data now",
+        defaultextension = ".ply",
+        filetypes = [("PLY files", "*.ply"), ("All files", "*.*")]
+    )
+    o3d.io.write_point_cloud(filename, combined, write_ascii=True)
 
 def centreAndScale(source, target):
     """
@@ -83,8 +101,7 @@ def main():
     source = readPlyFile(sourceFile)
     target = readPlyFile(targetFile)
     source, target = centreAndScale(source,target)
-    writePlyFile(source)
-    writePlyFile(target)
+    writeCombinedData(source, target)
 
 
 
