@@ -5,6 +5,56 @@ from scipy.linalg import det
 import tkinter as tk
 from tkinter import filedialog
 
+def visualizePointClouds(source, target):
+    """
+    Visualizes two point clouds (as NDArrays) with different colors.
+    Source is colored red and target is colored green.
+    """
+    # Create point clouds from the arrays
+    source_pcd = o3d.geometry.PointCloud()
+    target_pcd = o3d.geometry.PointCloud()
+    
+    # Convert data format - assumes input is (3, n)
+    source_points = np.transpose(source)
+    target_points = np.transpose(target)
+    
+    # Set points
+    source_pcd.points = o3d.utility.Vector3dVector(source_points)
+    target_pcd.points = o3d.utility.Vector3dVector(target_points)
+    
+    # Color the point clouds
+    source_pcd.paint_uniform_color([1, 0, 0])  # Red for source
+    target_pcd.paint_uniform_color([0, 1, 0])  # Green for target
+    
+    # Print information about the point clouds
+    print(f"Source point cloud: {len(source_pcd.points)} points")
+    print(f"Target point cloud: {len(target_pcd.points)} points")
+    
+    # Visualize
+    print("Visualizing point clouds...")
+    o3d.visualization.draw_geometries([source_pcd, target_pcd])
+
+def visualizePlyFile(filename):
+    """
+    Visualizes a single PLY file using Open3D.
+    """
+    try:
+        # Load the point cloud
+        pcd = o3d.io.read_point_cloud(filename)
+        
+        # Print information about the point cloud
+        print(f"Loaded point cloud from {filename}")
+        print(f"Point cloud contains {len(pcd.points)} points")
+        
+        # Check if the point cloud has colors
+        if not pcd.has_colors():
+            pcd.paint_uniform_color([0.5, 0.5, 1.0])  # Light blue default color
+        
+        # Visualize
+        o3d.visualization.draw_geometries([pcd])
+        
+    except Exception as e:
+        print(f"Error loading or visualizing PLY file: {e}")
 
 
 def selectFiles():
@@ -95,6 +145,8 @@ def centreAndScale(source, target):
     return source, target
 
 
+
+
 def main():
 
     sourceFile, targetFile = selectFiles()
@@ -102,6 +154,7 @@ def main():
     target = readPlyFile(targetFile)
     source, target = centreAndScale(source,target)
     writeCombinedData(source, target)
+    visualizePointClouds(source, target)
 
 
 
